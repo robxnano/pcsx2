@@ -568,6 +568,8 @@ void GSRendererNew::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool&
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_c = 0;
 		m_conf.ps.blend_d = 2;
+
+		fprintf(stderr, "Blend work 21 optimization\n");
 	}
 	else if ((m_conf.ps.blend_a == m_conf.ps.blend_b) || ((m_conf.ps.blend_b == m_conf.ps.blend_d) && (alpha_c0_one || alpha_c2_one)))
 	{
