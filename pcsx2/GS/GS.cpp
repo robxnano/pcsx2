@@ -1349,7 +1349,6 @@ void GSApp::Init()
 	m_default_configuration["mipmap_hw"]                                  = std::to_string(static_cast<int>(HWMipmapLevel::Automatic));
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
-	m_default_configuration["NTSC_Saturation"]                            = "1";
 	m_default_configuration["OsdShowMessages"]                            = "1";
 	m_default_configuration["OsdShowSpeed"]                               = "0";
 	m_default_configuration["OsdShowFPS"]                                 = "0";
