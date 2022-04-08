@@ -803,11 +803,35 @@ void GSFrame::CoreThread_OnResumed()
 	{
 		Show();
 	}
+	if (g_Conf->GSWindow.IsFullscreen)
+	{
+		ShowFullScreen(true, false);
+	}
 }
 
 void GSFrame::CoreThread_OnSuspended()
 {
-	if( !IsBeingDeleted() && g_Conf->GSWindow.CloseOnEsc ) Hide();
+	if (IsShown() && IsFullScreen())
+	{ 
+		// On some cases, probably due to driver bugs, if we don't exit fullscreen then
+		// the content stays on screen. Try to prevent that by first exiting fullscreen,
+		// but don't update the internal PCSX2 state/config, and PCSX2 will restore
+		// fullscreen correctly when emulation resumes according to its state/config.
+		ShowFullScreen(false, false);
+	}
+	if (g_Conf->GSWindow.CloseOnEsc)
+	{
+		if (!IsBeingDeleted()) Hide();
+
+		sMainFrame.SetFocus();
+
+#ifndef DISABLE_RECORDING
+		// Disable recording controls that only make sense if the game is running
+		sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
+		sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
+		sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
+#endif
+	}
 }
 
 void GSFrame::CoreThread_OnStopped()

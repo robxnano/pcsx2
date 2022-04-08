@@ -58,10 +58,10 @@ wxString KeyAcceleratorCode::ToString() const
 	// Let's use wx's string formatter:
 
 	return wxAcceleratorEntry(
-			   (cmd ? wxACCEL_CMD : 0) |
-				   (shift ? wxACCEL_SHIFT : 0) |
-				   (alt ? wxACCEL_ALT : 0),
-			   keycode)
+		(cmd ? wxACCEL_CMD : 0) |
+			(shift ? wxACCEL_SHIFT : 0) |
+			(alt ? wxACCEL_ALT : 0),
+		keycode)
 		.ToString();
 }
 
@@ -303,19 +303,9 @@ namespace Implementations
 
 	void Sys_Suspend()
 	{
-		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
-		if (gsframe && gsframe->IsShown() && gsframe->IsFullScreen())
-		{
-			// On some cases, probably due to driver bugs, if we don't exit fullscreen then
-			// the content stays on screen. Try to prevent that by first exiting fullscreen,
-			// but don't update the internal PCSX2 state/config, and PCSX2 will restore
-			// fullscreen correctly when emulation resumes according to its state/config.
-			gsframe->ShowFullScreen(false, false);
-		}
-
 		CoreThread.Suspend();
 
-		gsframe = wxGetApp().GetGsFramePtr(); // just in case suspend removes this window
+		GSFrame* gsframe = wxGetApp().GetGsFramePtr(); // just in case suspend removes this window
 		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc)
 		{
 			// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
@@ -328,8 +318,8 @@ namespace Implementations
 			// else prompt to either exit or abort the suspend.
 			if (!wxGetApp().ExitPromptWithNoGUI()          // configured to exit without a dialog
 				|| (wxOK == wxMessageBox(_("Exit PCSX2?"), // or confirmed exit at the dialog
-										 L"PCSX2",
-										 wxICON_WARNING | wxOK | wxCANCEL)))
+								L"PCSX2",
+								wxICON_WARNING | wxOK | wxCANCEL)))
 			{
 				// Pcsx2App knows to exit if no gui and the GS window closes.
 				gsframe->Close();
@@ -346,17 +336,6 @@ namespace Implementations
 				CoreThread.Resume();
 				return;
 			}
-		}
-
-		if (g_Conf->GSWindow.CloseOnEsc)
-		{
-			sMainFrame.SetFocus();
-#ifndef DISABLE_RECORDING
-			// Disable recording controls that only make sense if the game is running
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
-#endif
 		}
 	}
 
@@ -849,13 +828,13 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 			if (_acode.ToString() != acode.ToString())
 			{
 				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
-								WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
+					WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
 			}
 		}
 		else
 		{
 			Console.Error(L"Error overriding KB shortcut for '%s': can't understand '%s'",
-						  WX_STR(fromUTF8(searchfor)), WX_STR(overrideStr));
+				WX_STR(fromUTF8(searchfor)), WX_STR(overrideStr));
 		}
 	}
 	// End of overrides section
@@ -882,7 +861,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 	if (result == NULL)
 	{
 		Console.Warning(L"Kbd Accelerator '%s' is mapped to unknown command '%s'",
-						WX_STR(acode.ToString()), WX_STR(fromUTF8(searchfor)));
+			WX_STR(acode.ToString()), WX_STR(fromUTF8(searchfor)));
 	}
 	else
 	{
@@ -901,7 +880,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 			if (acode.cmd || acode.shift)
 			{
 				Console.Error(L"Cannot map %s to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
-							  WX_STR(acode.ToString()));
+					WX_STR(acode.ToString()));
 			}
 			else
 			{
@@ -916,8 +895,8 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 				if (_acode.val32 != acode.val32)
 				{ // overriding default
 					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s and %s",
-									WX_STR(shifted.ToString()),
-									WX_STR(controlledShifted.ToString()));
+						WX_STR(shifted.ToString()),
+						WX_STR(controlledShifted.ToString()));
 				}
 			}
 		}
@@ -977,7 +956,7 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 	// At this early stage of startup, the application assumes installed mode, so portable mode custom keybindings may present issues.
 	// Relevant - https://github.com/PCSX2/pcsx2/blob/678829a5b2b8ca7a3e42d8edc9ab201bf00b0fe9/pcsx2/gui/AppInit.cpp#L479
 	// Compared to L990 of GlobalCommands.cpp which also does an init for the GlobalAccelerators.
-	// The idea was to have: Reading from the PCSX2_keys.ini in the ini folder based on PCSX2_keys.ini.default which get overridden. 
+	// The idea was to have: Reading from the PCSX2_keys.ini in the ini folder based on PCSX2_keys.ini.default which get overridden.
 	// We also need to make it easier to do custom hotkeys for both normal/portable PCSX2 in the GUI.
 	GlobalAccels->Map(AAC(WXK_TAB), "Framelimiter_TurboToggle");
 	GlobalAccels->Map(AAC(WXK_TAB).Shift(), "Framelimiter_SlomoToggle");
