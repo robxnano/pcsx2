@@ -530,7 +530,7 @@ void GSPanel::DirectKeyCommand( wxKeyEvent& evt )
 
 void GSPanel::UpdateScreensaver()
 {
-    bool prevent = g_Conf->GSWindow.DisableScreenSaver && m_HasFocus && m_coreRunning;
+	bool prevent = g_Conf->GSWindow.DisableScreenSaver && m_HasFocus && m_coreRunning;
 	ScreensaverAllow(!prevent);
 }
 
@@ -811,6 +811,37 @@ void GSFrame::CoreThread_OnResumed()
 
 void GSFrame::CoreThread_OnSuspended()
 {
+	if (!wxGetApp().HasGUI())
+	{
+		// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
+		// However, by default suspend just hides the gs window, so PCSX2 will not exit
+		// and there will also be no way to exit it even if no windows are left.
+		// If the gs window is not set to close on suspend, then the user can still
+		// close it with the X button, which PCSX2 will recognize and exit.
+		// So if we're set to close on esc and nogui:
+		// If the user didn't specify --noguiprompt - exit immediately.
+		// else prompt to either exit or abort the suspend.
+		if (!wxGetApp().ExitPromptWithNoGUI()		   // configured to exit without a dialog
+			|| (wxOK == wxMessageBox(_("Exit PCSX2?"), // or confirmed exit at the dialog
+							L"PCSX2",
+							wxICON_WARNING | wxOK | wxCANCEL)))
+		{
+			// Pcsx2App knows to exit if no gui and the GS window closes.
+			Close();
+			return;
+		}
+		else
+		{
+			// aborting suspend request
+			// Note: if we didn't want to suspend emulation for this confirmation dialog,
+			// then pressing ESC would have exited fullscreen without PCSX2 knowing about it,
+			// and since it's not suspended it would not re-init the fullscreen state if the
+			// confirmation is aborted. On such case we'd have needed to set the gsframe
+			// fullscreen mode here according to g_Conf->GSWindow.IsFullscreen
+			CoreThread.Resume();
+			return;
+		}
+	}
 	if (IsShown() && IsFullScreen())
 	{ 
 		// On some cases, probably due to driver bugs, if we don't exit fullscreen then
@@ -819,6 +850,7 @@ void GSFrame::CoreThread_OnSuspended()
 		// fullscreen correctly when emulation resumes according to its state/config.
 		ShowFullScreen(false, false);
 	}
+	
 	if (g_Conf->GSWindow.CloseOnEsc)
 	{
 		if (!IsBeingDeleted()) Hide();
