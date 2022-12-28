@@ -1819,6 +1819,9 @@ int main(int argc, char* argv[])
 
 	QApplication app(argc, argv);
 
+	// Set the correct .desktop file name for Linux
+	app.setDesktopFileName("net.pcsx2.PCSX2");
+
 #ifndef _WIN32
 	if (!PerformEarlyHardwareChecks())
 		return EXIT_FAILURE;
